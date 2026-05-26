@@ -1,0 +1,33 @@
+name: 24/7 Daily AI News Intelligence Sync
+
+on:
+  schedule:
+    # Trigger at 00:30 UTC every single day (which translates to exactly 06:00 AM IST!)
+    - cron: '30 0 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI if needed
+
+jobs:
+  sync-intelligence:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grants commit access to push compiled news back
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Execute Cloud News Sync Script
+        run: |
+          python scripts/fetch_news.py
+
+      - name: Commit & Push Intelligence Updates
+        run: |
+          git config --global user.name "Aether Intelligence Bot"
+          git config --global user.email "bot@aether-intelligence.local"
+          git add src/data/newsData.js
+          git diff-index --quiet HEAD || (git commit -m "chore: automated daily news sync [$(date +'%Y-%m-%d')]" && git push)
