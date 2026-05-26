@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDashboard } from '../context/DashboardContext';
-import { SlidersHorizontal, Eye } from 'lucide-react';
+import { SlidersHorizontal, Eye, Calendar } from 'lucide-react';
 
 export const Filters = () => {
   const { 
@@ -9,7 +9,9 @@ export const Filters = () => {
     selectedImpact, 
     setSelectedImpact,
     selectedCountry,
-    setSelectedCountry,
+    selectedDate,
+    setSelectedDate,
+    availableDates,
     filteredNews,
     theme
   } = useDashboard();
@@ -19,14 +21,20 @@ export const Filters = () => {
     'Open Source', 'Government Policy', 'Funding', 'Robotics', 'AI Agents'
   ];
 
-  const impacts = ['All', 'High', 'Medium', 'Low'];
+  const formatFriendlyDate = (dateString) => {
+    const dateObj = new Date(dateString);
+    return dateObj.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   return (
     <div className="space-y-4">
       {/* Category Pills Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         {/* Horizontal Scrolling Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none max-w-full">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 xl:pb-0 scrollbar-none max-w-full">
           {categories.map((cat) => {
             const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
             return (
@@ -49,13 +57,40 @@ export const Filters = () => {
           })}
         </div>
 
-        {/* Action Counters / Impact Dropdowns */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Action Counters / Selectors Row */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
             <Eye className="w-3.5 h-3.5" />
             <span>Showing {filteredNews.length} articles</span>
           </div>
 
+          {/* Date Selector Dropdown */}
+          {selectedCountry !== 'Saved' && (
+            <div className="relative">
+              <select
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className={`
+                  appearance-none px-3.5 py-1.5 text-xs rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500/50 pr-8 font-semibold transition-all duration-300
+                  ${theme === 'dark' 
+                    ? 'bg-slate-900/40 text-slate-200 border border-slate-800/80' 
+                    : 'bg-white text-slate-700 border border-slate-200'
+                  }
+                `}
+              >
+                {availableDates.map(date => (
+                  <option key={date} value={date}>
+                    📅 {formatFriendlyDate(date)}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                <SlidersHorizontal className="w-3.5 h-3.5 rotate-90" />
+              </div>
+            </div>
+          )}
+
+          {/* Impact Selector Dropdown */}
           <div className="relative">
             <select
               value={selectedImpact}

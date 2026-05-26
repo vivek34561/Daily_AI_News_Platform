@@ -8,6 +8,13 @@ export const DashboardProvider = ({ children }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCountry, setSelectedCountry] = useState('All');
   const [selectedImpact, setSelectedImpact] = useState('All');
+  
+  // Dynamic list of unique dates in data, sorted descending (latest first)
+  const availableDates = [...new Set(newsData.map(news => news.date))].sort((a, b) => new Date(b) - new Date(a));
+  
+  // Set default to latest available date
+  const [selectedDate, setSelectedDate] = useState(availableDates[0] || '2026-05-26');
+  
   const [bookmarkedIds, setBookmarkedIds] = useState(() => {
     const saved = localStorage.getItem('bookmarks');
     return saved ? JSON.parse(saved) : [];
@@ -51,10 +58,9 @@ export const DashboardProvider = ({ children }) => {
     setIsRefreshing(true);
     setTimeout(() => {
       setIsRefreshing(false);
-      // Simulate adding a fresh notification
       const newNotif = {
         id: Date.now(),
-        text: `🔄 Database refreshed successfully! Loaded ${newsData.length} active nodes.`,
+        text: `🔄 Database refreshed successfully! Sync'd date-wise nodes.`,
         unread: true
       };
       setNotifications(prev => [newNotif, ...prev]);
@@ -74,8 +80,11 @@ export const DashboardProvider = ({ children }) => {
     const matchesCategory = selectedCategory === 'All' || news.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesCountry = selectedCountry === 'All' || news.country.toLowerCase() === selectedCountry.toLowerCase();
     const matchesImpact = selectedImpact === 'All' || news.impactLevel.toLowerCase() === selectedImpact.toLowerCase();
+    
+    // Bookmark views bypass date filter to show all saved, standard feeds match date
+    const matchesDate = selectedCountry === 'Saved' || news.date === selectedDate;
 
-    return matchesSearch && matchesCategory && matchesCountry && matchesImpact;
+    return matchesSearch && matchesCategory && matchesCountry && matchesImpact && matchesDate;
   });
 
   return (
@@ -88,6 +97,9 @@ export const DashboardProvider = ({ children }) => {
       setSelectedCountry,
       selectedImpact,
       setSelectedImpact,
+      selectedDate,
+      setSelectedDate,
+      availableDates,
       bookmarkedIds,
       toggleBookmark,
       theme,
